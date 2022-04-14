@@ -1,5 +1,5 @@
 package javaposse.jobdsl.plugin
-
+ import jenkins.branch.OrganizationFolder;
 import com.cloudbees.hudson.plugins.folder.AbstractFolder
 import com.cloudbees.hudson.plugins.folder.AbstractFolderProperty
 import com.cloudbees.hudson.plugins.folder.AbstractFolderPropertyDescriptor
@@ -664,6 +664,53 @@ class JenkinsJobManagementSpec extends Specification {
 
         then:
         def actual = jenkinsRule.jenkins.getItem('folder')
+        actual.properties.size() == 0
+    }
+
+    def 'createOrUpdateConfig should preserve credentials if they exist on an OrganizationFolder'() {
+        setup:
+        OrganizationFolder folder = jenkinsRule.createProject(OrganizationFolder, 'org')
+        // TODO
+        System.out.println("----")
+        folder.writeConfigDotXml(System.out)
+        System.out.println("----")
+        // TODO
+        def property = createCredentialProperty()
+        folder.addProperty(property)
+        // TODO
+        System.out.println("----")
+        folder.writeConfigDotXml(System.out)
+        System.out.println("----")
+        // TODO
+
+        when:
+        jobManagement.createOrUpdateConfig(createItem('org', '/organizationfolder.xml'), false)
+        // TODO
+        System.out.println("----")
+        folder.writeConfigDotXml(System.out)
+        System.out.println("----")
+        // TODO
+
+        then:
+        def actualItem = jenkinsRule.jenkins.getItem('org')
+        def actual = (AbstractFolder<?>) actualItem
+        System.out.println(actual.properties)
+        actual.properties
+//        actual.properties.size() == 1
+    }
+
+    def 'createOrUpdateConfig should ignore other properties on the OrganizationFolder'() {
+        setup:
+        OrganizationFolder folder = jenkinsRule.createProject(OrganizationFolder, 'org')
+        folder.addProperty(new FakeProperty())
+        folder.writeConfigDotXml(System.out)
+
+        when:
+        jobManagement.createOrUpdateConfig(createItem('org', '/organizationfolder.xml'), false)
+        folder.writeConfigDotXml(System.out)
+
+        then:
+        def actual = jenkinsRule.jenkins.getItem('org')
         actual.properties.size() == 0
     }
 
