@@ -670,40 +670,30 @@ class JenkinsJobManagementSpec extends Specification {
     def 'createOrUpdateConfig should preserve credentials if they exist on an OrganizationFolder'() {
         setup:
         OrganizationFolder folder = jenkinsRule.createProject(OrganizationFolder, 'org')
-        // TODO
-        System.out.println("----")
-        folder.writeConfigDotXml(System.out)
-        System.out.println("----")
-        // TODO
+        // `OrganizationFolder`s include a lot of existing metadata that is appended, regardless of how few we already
+        // set, so we should calculate expected as the default computed properties
+        int defaultProperties = folder.properties.size()
+
         def property = createCredentialProperty()
         folder.addProperty(property)
-        // TODO
-        System.out.println("----")
-        folder.writeConfigDotXml(System.out)
-        System.out.println("----")
-        // TODO
 
         when:
         jobManagement.createOrUpdateConfig(createItem('org', '/organizationfolder.xml'), false)
-        // TODO
-        System.out.println("----")
-        folder.writeConfigDotXml(System.out)
-        System.out.println("----")
-        // TODO
 
         then:
         def actualItem = jenkinsRule.jenkins.getItem('org')
         def actual = (AbstractFolder<?>) actualItem
-        System.out.println(actual.properties)
-        actual.properties
-//        actual.properties.size() == 1
+        actual.properties.size() == defaultProperties + 1
     }
 
     def 'createOrUpdateConfig should ignore other properties on the OrganizationFolder'() {
         setup:
         OrganizationFolder folder = jenkinsRule.createProject(OrganizationFolder, 'org')
+        // `OrganizationFolder`s include a lot of existing metadata that is appended, regardless of how few we already
+        // set, so we should calculate expected as the default computed properties
+        int defaultProperties = folder.properties.size()
+
         folder.addProperty(new FakeProperty())
-        folder.writeConfigDotXml(System.out)
 
         when:
         jobManagement.createOrUpdateConfig(createItem('org', '/organizationfolder.xml'), false)
@@ -711,7 +701,7 @@ class JenkinsJobManagementSpec extends Specification {
 
         then:
         def actual = jenkinsRule.jenkins.getItem('org')
-        actual.properties.size() == 0
+        actual.properties.size() == defaultProperties
     }
 
     def 'createOrUpdateView should work if view type changes'() {
